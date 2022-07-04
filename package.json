@@ -1,15 +1,17 @@
 {
-  "name": "clean-node-api",
+  "name": "e-survey",
   "version": "1.0.0",
-  "description": "",
+  "description": "NodeJs Rest API and GraphQL using TDD, Clean Architecture, Typescript and Design Patterns",
   "main": "index.js",
   "scripts": {
     "test": "jest",
     "test:staged": "jest"
   },
   "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "author": "ericknathan",
+  "license": "GPL-3.0-or-later",
+  "repository": "github:ericknathan/e-survey",
+  "homepage": "https://github.com/ericknathan/e-survey",
   "devDependencies": {
     "@types/jest": "^28.1.4",
     "@types/node": "^18.0.1",
@@ -26,5 +28,8 @@
     "ts-jest": "^28.0.5",
     "ts-node": "^10.8.2",
     "typescript": "^4"
+  },
+  "engines": {
+    "node": "16.x"
   }
 }
