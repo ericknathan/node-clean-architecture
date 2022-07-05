@@ -35,5 +35,9 @@
   },
   "engines": {
     "node": "16.x"
+  },
+  "dependencies": {
+    "@types/validator": "^13.7.4",
+    "validator": "^13.7.0"
   }
 }
