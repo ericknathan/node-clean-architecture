@@ -10,6 +10,6 @@ export class AccountMongoRepository implements AddAccountRepository {
     const { insertedId } = result
     const accountById = await accountCollection.findOne({ _id: insertedId })
 
-    return MongoHelper.map(accountById)
+    return MongoHelper.map(accountById) as AccountModel
   }
 }
