@@ -17,6 +17,7 @@
   "repository": "github:ericknathan/e-survey",
   "homepage": "https://github.com/ericknathan/e-survey",
   "devDependencies": {
+    "@types/bcrypt": "^5.0.0",
     "@types/jest": "^28.1.4",
     "@types/node": "^18.0.1",
     "@typescript-eslint/eslint-plugin": "^4.0.1",
@@ -38,6 +39,7 @@
   },
   "dependencies": {
     "@types/validator": "^13.7.4",
+    "bcrypt": "^5.0.1",
     "validator": "^13.7.0"
   }
 }
