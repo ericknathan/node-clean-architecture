@@ -28,17 +28,20 @@ export class SignInController implements Controller {
         return badRequest(new InvalidParamError('email'))
       }
 
-      const credentialsAreValid = await this.authenticateAccount.authenticate({
+      const authenticationResponse = await this.authenticateAccount.authenticate({
         email,
         password
       })
 
-      if (!credentialsAreValid) {
+      if (!authenticationResponse) {
         return unauthorizedError()
       }
 
-      // TODO: Change to JWT token response
-      return ok({ authorized: true })
+      const { accessToken } = authenticationResponse
+
+      return ok({
+        accessToken
+      })
     } catch (error) {
       return serverError(error)
     }
