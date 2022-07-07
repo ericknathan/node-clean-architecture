@@ -1,6 +1,6 @@
 import { InvalidParamError, MissingParamError, ServerError } from '../../errors'
 import { badRequest, serverError, unauthorizedError, ok } from '../../helpers/http-helper'
-import { EmailValidator, HttpRequest, AuthenticateAccount, CredentialsModel } from './signin-protocols'
+import { EmailValidator, HttpRequest, AuthenticateAccount, AuthenticateAccountModel, CredentialsModel } from './signin-protocols'
 import { SignInController } from './signin'
 
 const makeEmailValidator = (): EmailValidator => {
@@ -15,8 +15,8 @@ const makeEmailValidator = (): EmailValidator => {
 
 const makeAuthenticateAccount = (): AuthenticateAccount => {
   class AuthenticateAccountStub implements AuthenticateAccount {
-    async authenticate (account: CredentialsModel): Promise<boolean> {
-      return Promise.resolve(true)
+    async authenticate (account: CredentialsModel): Promise<AuthenticateAccountModel> {
+      return Promise.resolve(makeAuthenticationResponse())
     }
   }
 
@@ -28,6 +28,10 @@ const makeFakeRequest = (): HttpRequest => ({
     email: 'any_email@mail.com',
     password: 'any_password'
   }
+})
+
+const makeAuthenticationResponse = (): AuthenticateAccountModel => ({
+  accessToken: 'any_token'
 })
 
 interface SutTypes {
@@ -122,7 +126,7 @@ describe('SignIn Controller', () => {
 
   test('should return 401 status if invalid credentials are provided', async () => {
     const { sut, authenticateAccountStub } = makeSut()
-    jest.spyOn(authenticateAccountStub, 'authenticate').mockReturnValueOnce(Promise.resolve(false))
+    jest.spyOn(authenticateAccountStub, 'authenticate').mockReturnValueOnce(Promise.resolve(null))
 
     const httpResponse = await sut.handle(makeFakeRequest())
     expect(httpResponse).toEqual(unauthorizedError())
@@ -132,7 +136,6 @@ describe('SignIn Controller', () => {
     const { sut } = makeSut()
 
     const httpResponse = await sut.handle(makeFakeRequest())
-    // TODO: Change to JWT token response
-    expect(httpResponse).toEqual(ok({ authorized: true }))
+    expect(httpResponse).toEqual(ok(makeAuthenticationResponse()))
   })
 })
