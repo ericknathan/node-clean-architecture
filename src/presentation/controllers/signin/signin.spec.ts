@@ -110,7 +110,16 @@ describe('SignIn Controller', () => {
     })
   })
 
+  test('should return 500 status if AuthenticateAccount throws', async () => {
+    const { sut, authenticateAccountStub } = makeSut()
+    jest.spyOn(authenticateAccountStub, 'authenticate').mockImplementationOnce(async () => {
+      return Promise.reject(new Error())
+    })
+
+    const httpResponse = await sut.handle(makeFakeRequest())
+    expect(httpResponse).toEqual(serverError(new ServerError(null)))
+  })
+
   test.todo('should return 401 status if invalid credentials are provided')
   test.todo('should return 200 status if valid credentials is provided')
-  test.todo('should return 500 status if Authentication throws')
 })
