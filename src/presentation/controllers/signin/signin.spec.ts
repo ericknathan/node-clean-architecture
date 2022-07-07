@@ -66,9 +66,17 @@ describe('SignIn Controller', () => {
     expect(httpResponse).toEqual(badRequest(new InvalidParamError('email')))
   })
 
+  test('should call EmailValidator with correct email', async () => {
+    const { sut, emailValidatorStub } = makeSut()
+    const isValidSpy = jest.spyOn(emailValidatorStub, 'isValid')
+
+    const httpRequest = makeFakeRequest()
+    await sut.handle(httpRequest)
+    expect(isValidSpy).toHaveBeenCalledWith(httpRequest.body.email)
+  })
+
   test.todo('should return 401 status if invalid credentials are provided')
   test.todo('should return 200 status if valid credentials is provided')
-  test.todo('should call EmailValidator with correct email')
   test.todo('should return 500 status if EmailValidator throws')
   test.todo('should return call Authentication with correct values')
   test.todo('should return 500 status if Authentication throws')
