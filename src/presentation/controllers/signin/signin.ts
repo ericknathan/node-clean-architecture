@@ -1,6 +1,6 @@
 import { HttpResponse, HttpRequest, Controller, EmailValidator, AuthenticateAccount } from './signin-protocols'
 import { InvalidParamError, MissingParamError } from '../../errors'
-import { badRequest, serverError } from '../../helpers/http-helper'
+import { badRequest, serverError, unauthorizedError } from '../../helpers/http-helper'
 
 export class SignInController implements Controller {
   private readonly emailValidator: EmailValidator
@@ -28,10 +28,14 @@ export class SignInController implements Controller {
         return badRequest(new InvalidParamError('email'))
       }
 
-      await this.authenticateAccount.authenticate({
+      const credentialsAreValid = await this.authenticateAccount.authenticate({
         email,
         password
       })
+
+      if (!credentialsAreValid) {
+        return unauthorizedError()
+      }
     } catch (error) {
       return serverError(error)
     }
