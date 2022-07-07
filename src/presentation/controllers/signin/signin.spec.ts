@@ -1,6 +1,6 @@
 import { InvalidParamError, MissingParamError, ServerError } from '../../errors'
 import { badRequest, serverError } from '../../helpers/http-helper'
-import { EmailValidator, HttpRequest } from './signin-protocols'
+import { EmailValidator, HttpRequest, AuthenticateAccount, CredentialsModel } from './signin-protocols'
 import { SignInController } from './signin'
 
 const makeEmailValidator = (): EmailValidator => {
@@ -13,6 +13,16 @@ const makeEmailValidator = (): EmailValidator => {
   return new EmailValidatorStub()
 }
 
+const makeAuthenticateAccount = (): AuthenticateAccount => {
+  class AuthenticateAccountStub implements AuthenticateAccount {
+    async authenticate (account: CredentialsModel): Promise<boolean> {
+      return Promise.resolve(true)
+    }
+  }
+
+  return new AuthenticateAccountStub()
+}
+
 const makeFakeRequest = (): HttpRequest => ({
   body: {
     email: 'any_email@mail.com',
@@ -23,15 +33,18 @@ const makeFakeRequest = (): HttpRequest => ({
 interface SutTypes {
   sut: SignInController
   emailValidatorStub: EmailValidator
+  authenticateAccountStub: AuthenticateAccount
 }
 
 const makeSut = (): SutTypes => {
   const emailValidatorStub = makeEmailValidator()
-  const sut = new SignInController(emailValidatorStub)
+  const authenticateAccountStub = makeAuthenticateAccount()
+  const sut = new SignInController(emailValidatorStub, authenticateAccountStub)
 
   return {
     sut,
-    emailValidatorStub
+    emailValidatorStub,
+    authenticateAccountStub
   }
 }
 
@@ -85,8 +98,19 @@ describe('SignIn Controller', () => {
     expect(httpResponse).toEqual(serverError(new ServerError(null)))
   })
 
+  test('should return call AuthenticateAccount with correct values', async () => {
+    const { sut, authenticateAccountStub } = makeSut()
+    const authenticateAccountSpy = jest.spyOn(authenticateAccountStub, 'authenticate')
+
+    const httpRequest = makeFakeRequest()
+    await sut.handle(httpRequest)
+    expect(authenticateAccountSpy).toHaveBeenCalledWith({
+      email: httpRequest.body.email,
+      password: httpRequest.body.password
+    })
+  })
+
   test.todo('should return 401 status if invalid credentials are provided')
   test.todo('should return 200 status if valid credentials is provided')
-  test.todo('should return call Authentication with correct values')
   test.todo('should return 500 status if Authentication throws')
 })
