@@ -1,6 +1,6 @@
 import { HttpResponse, HttpRequest, Controller, EmailValidator, AuthenticateAccount } from './signin-protocols'
 import { InvalidParamError, MissingParamError } from '../../errors'
-import { badRequest, serverError, unauthorizedError } from '../../helpers/http-helper'
+import { badRequest, serverError, unauthorizedError, ok } from '../../helpers/http-helper'
 
 export class SignInController implements Controller {
   private readonly emailValidator: EmailValidator
@@ -36,6 +36,9 @@ export class SignInController implements Controller {
       if (!credentialsAreValid) {
         return unauthorizedError()
       }
+
+      // TODO: Change to JWT token response
+      return ok({ authorized: true })
     } catch (error) {
       return serverError(error)
     }
