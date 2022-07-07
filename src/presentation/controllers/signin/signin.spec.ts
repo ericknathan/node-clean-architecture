@@ -14,7 +14,17 @@ describe('SignIn Controller', () => {
     expect(httpResponse).toEqual(badRequest(new MissingParamError('email')))
   })
 
-  test.todo('should return 400 status if no password is provided')
+  test('should return 400 status if no password is provided', async () => {
+    const sut = new SignInController()
+    const httpRequest = {
+      body: {
+        email: 'any_email@mail.com'
+      }
+    }
+    const httpResponse = await sut.handle(httpRequest)
+    expect(httpResponse).toEqual(badRequest(new MissingParamError('password')))
+  })
+
   test.todo('should return 400 status if an invalid email is provided')
   test.todo('should return 401 status if invalid credentials are provided')
   test.todo('should return 200 status if valid credentials is provided')
