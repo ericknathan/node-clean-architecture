@@ -1,5 +1,5 @@
 import { InvalidParamError, MissingParamError, ServerError } from '../../errors'
-import { badRequest, serverError, unauthorizedError } from '../../helpers/http-helper'
+import { badRequest, serverError, unauthorizedError, ok } from '../../helpers/http-helper'
 import { EmailValidator, HttpRequest, AuthenticateAccount, CredentialsModel } from './signin-protocols'
 import { SignInController } from './signin'
 
@@ -128,5 +128,11 @@ describe('SignIn Controller', () => {
     expect(httpResponse).toEqual(unauthorizedError())
   })
 
-  test.todo('should return 200 status if valid credentials is provided')
+  test('should return 200 status if valid credentials are provided', async () => {
+    const { sut } = makeSut()
+
+    const httpResponse = await sut.handle(makeFakeRequest())
+    // TODO: Change to JWT token response
+    expect(httpResponse).toEqual(ok({ authorized: true }))
+  })
 })
