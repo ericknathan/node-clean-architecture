@@ -1,5 +1,5 @@
-import { InvalidParamError, MissingParamError } from '../../errors'
-import { badRequest } from '../../helpers/http-helper'
+import { InvalidParamError, MissingParamError, ServerError } from '../../errors'
+import { badRequest, serverError } from '../../helpers/http-helper'
 import { EmailValidator, HttpRequest } from './signin-protocols'
 import { SignInController } from './signin'
 
@@ -75,9 +75,18 @@ describe('SignIn Controller', () => {
     expect(isValidSpy).toHaveBeenCalledWith(httpRequest.body.email)
   })
 
+  test('should return 500 status if EmailValidator throws', async () => {
+    const { sut, emailValidatorStub } = makeSut()
+    jest.spyOn(emailValidatorStub, 'isValid').mockImplementationOnce(() => {
+      throw new Error()
+    })
+
+    const httpResponse = await sut.handle(makeFakeRequest())
+    expect(httpResponse).toEqual(serverError(new ServerError(null)))
+  })
+
   test.todo('should return 401 status if invalid credentials are provided')
   test.todo('should return 200 status if valid credentials is provided')
-  test.todo('should return 500 status if EmailValidator throws')
   test.todo('should return call Authentication with correct values')
   test.todo('should return 500 status if Authentication throws')
 })
