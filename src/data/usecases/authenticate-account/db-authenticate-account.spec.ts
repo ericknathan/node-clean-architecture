@@ -84,7 +84,14 @@ describe('DbAuthenticateAccount Usecase', () => {
     expect(comparerSpy).toHaveBeenCalledWith(credentials.password, 'hashed_password')
   })
 
-  test.todo('should throw if Comparer throws')
+  test('should throw if Comparer throws', async () => {
+    const { sut, comparerStub } = makeSut()
+    jest.spyOn(comparerStub, 'compare').mockReturnValueOnce(Promise.reject(new Error()))
+
+    const promise = sut.authenticate(makeFakeCredentials())
+    await expect(promise).rejects.toThrow()
+  })
+
   test.todo('should return null if Comparer returns false')
   test.todo('should call Encrypter with correct id')
   test.todo('should throw if Encrypter throw')
