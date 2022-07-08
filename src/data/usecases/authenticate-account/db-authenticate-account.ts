@@ -1,17 +1,19 @@
-import { AuthenticateAccount, AuthenticateAccountModel, GetAccountRepository, CredentialsModel } from './db-authenticate-account-protocols'
+import { Comparer, AuthenticateAccount, AuthenticateAccountModel, GetAccountRepository, CredentialsModel } from './db-authenticate-account-protocols'
 
 export class DbAuthenticateAccount implements AuthenticateAccount {
   private readonly getAccountRepository: GetAccountRepository
+  private readonly comparer: Comparer
 
-  constructor (getAccountRepository: GetAccountRepository) {
+  constructor (getAccountRepository: GetAccountRepository, comparer: Comparer) {
     this.getAccountRepository = getAccountRepository
+    this.comparer = comparer
   }
 
   async authenticate (credentials: CredentialsModel): Promise<AuthenticateAccountModel> {
     const account = await this.getAccountRepository.getByEmail(credentials.email)
 
     if (account) {
-      console.log(account)
+      await this.comparer.compare(credentials.password, account.password)
     }
 
     return null
