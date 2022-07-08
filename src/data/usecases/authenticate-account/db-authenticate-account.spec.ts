@@ -1,5 +1,5 @@
 import { DbAuthenticateAccount } from './db-authenticate-account'
-import { GetAccountRepository, GetAccountRepositoryPayload, CredentialsModel } from './db-authenticate-account-protocols'
+import { Comparer, GetAccountRepository, GetAccountRepositoryPayload, CredentialsModel } from './db-authenticate-account-protocols'
 
 const makeGetAccountRepository = (): GetAccountRepository => {
   class GetAccountRepositoryStub implements GetAccountRepository {
@@ -11,10 +11,20 @@ const makeGetAccountRepository = (): GetAccountRepository => {
   return new GetAccountRepositoryStub()
 }
 
+const makeComparer = (): Comparer => {
+  class ComparerStub implements Comparer {
+    async compare (value: string, hash: string): Promise<boolean> {
+      return Promise.resolve(true)
+    }
+  }
+
+  return new ComparerStub()
+}
+
 const makeFakeAccountData = (): GetAccountRepositoryPayload => ({
   id: 'valid_id',
   name: 'valid_name',
-  password: 'valid_password'
+  password: 'hashed_password'
 })
 
 const makeFakeCredentials = (): CredentialsModel => ({
@@ -25,15 +35,18 @@ const makeFakeCredentials = (): CredentialsModel => ({
 interface SutTypes {
   sut: DbAuthenticateAccount
   getAccountRepositoryStub: GetAccountRepository
+  comparerStub: Comparer
 }
 
 const makeSut = (): SutTypes => {
   const getAccountRepositoryStub = makeGetAccountRepository()
-  const sut = new DbAuthenticateAccount(getAccountRepositoryStub)
+  const comparerStub = makeComparer()
+  const sut = new DbAuthenticateAccount(getAccountRepositoryStub, comparerStub)
 
   return {
     sut,
-    getAccountRepositoryStub
+    getAccountRepositoryStub,
+    comparerStub
   }
 }
 
@@ -62,7 +75,15 @@ describe('DbAuthenticateAccount Usecase', () => {
     expect(account).toBeNull()
   })
 
-  test.todo('should call Comparer with correct values')
+  test('should call Comparer with correct values', async () => {
+    const { sut, comparerStub } = makeSut()
+    const comparerSpy = jest.spyOn(comparerStub, 'compare')
+
+    const credentials = makeFakeCredentials()
+    await sut.authenticate(credentials)
+    expect(comparerSpy).toHaveBeenCalledWith(credentials.password, 'hashed_password')
+  })
+
   test.todo('should throw if Comparer throws')
   test.todo('should return null if Comparer returns false')
   test.todo('should call Encrypter with correct id')
