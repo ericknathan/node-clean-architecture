@@ -24,7 +24,7 @@ const makeComparer = (): Comparer => {
 const makeEncrypter = (): Encrypter => {
   class EncrypterStub implements Encrypter {
     async encrypt (value: string): Promise<string> {
-      return Promise.resolve('hashed_password')
+      return Promise.resolve('hashed_token')
     }
   }
 
@@ -85,8 +85,8 @@ describe('DbAuthenticateAccount Usecase', () => {
     const { sut, getAccountRepositoryStub } = makeSut()
     jest.spyOn(getAccountRepositoryStub, 'getByEmail').mockReturnValueOnce(Promise.resolve(null))
 
-    const account = await sut.authenticate(makeFakeCredentials())
-    expect(account).toBeNull()
+    const authenticationPayload = await sut.authenticate(makeFakeCredentials())
+    expect(authenticationPayload).toBeNull()
   })
 
   test('should call Comparer with correct values', async () => {
@@ -110,8 +110,8 @@ describe('DbAuthenticateAccount Usecase', () => {
     const { sut, comparerStub } = makeSut()
     jest.spyOn(comparerStub, 'compare').mockReturnValueOnce(Promise.resolve(false))
 
-    const account = await sut.authenticate(makeFakeCredentials())
-    expect(account).toBeNull()
+    const authenticationPayload = await sut.authenticate(makeFakeCredentials())
+    expect(authenticationPayload).toBeNull()
   })
 
   test('should call Encrypter with correct id', async () => {
@@ -131,5 +131,11 @@ describe('DbAuthenticateAccount Usecase', () => {
     await expect(promise).rejects.toThrow()
   })
 
-  test.todo('should return correct data on success')
+  test('should return correct data on success', async () => {
+    const { sut } = makeSut()
+    const authenticationPayload = await sut.authenticate(makeFakeCredentials())
+    expect(authenticationPayload).toEqual({
+      accessToken: 'hashed_token'
+    })
+  })
 })
