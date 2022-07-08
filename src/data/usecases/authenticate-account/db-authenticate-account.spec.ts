@@ -1,3 +1,4 @@
+import { AccessTokenRepository } from '../../protocols/access-token-repository'
 import { DbAuthenticateAccount } from './db-authenticate-account'
 import { Comparer, Encrypter, GetAccountRepository, GetAccountRepositoryPayload, CredentialsModel } from './db-authenticate-account-protocols'
 
@@ -31,6 +32,16 @@ const makeEncrypter = (): Encrypter => {
   return new EncrypterStub()
 }
 
+const makeAccessTokenRepository = (): AccessTokenRepository => {
+  class AccessTokenRepositoryStub implements AccessTokenRepository {
+    async update (accountId: string, accessToken: string): Promise<void> {
+      return Promise.resolve()
+    }
+  }
+
+  return new AccessTokenRepositoryStub()
+}
+
 const makeFakeAccountData = (): GetAccountRepositoryPayload => ({
   id: 'valid_id',
   name: 'valid_name',
@@ -47,19 +58,22 @@ interface SutTypes {
   getAccountRepositoryStub: GetAccountRepository
   comparerStub: Comparer
   encrypterStub: Encrypter
+  accessTokenRepositoryStub: AccessTokenRepository
 }
 
 const makeSut = (): SutTypes => {
   const getAccountRepositoryStub = makeGetAccountRepository()
   const comparerStub = makeComparer()
   const encrypterStub = makeEncrypter()
-  const sut = new DbAuthenticateAccount(getAccountRepositoryStub, comparerStub, encrypterStub)
+  const accessTokenRepositoryStub = makeAccessTokenRepository()
+  const sut = new DbAuthenticateAccount(getAccountRepositoryStub, comparerStub, encrypterStub, accessTokenRepositoryStub)
 
   return {
     sut,
     getAccountRepositoryStub,
     comparerStub,
-    encrypterStub
+    encrypterStub,
+    accessTokenRepositoryStub
   }
 }
 
@@ -137,5 +151,14 @@ describe('DbAuthenticateAccount Usecase', () => {
     expect(authenticationPayload).toEqual({
       accessToken: 'hashed_token'
     })
+  })
+
+  test('should call AccessTokenRepository with correct values', async () => {
+    const { sut, accessTokenRepositoryStub } = makeSut()
+    const updateSpy = jest.spyOn(accessTokenRepositoryStub, 'update')
+
+    const credentials = makeFakeCredentials()
+    await sut.authenticate(credentials)
+    expect(updateSpy).toHaveBeenCalledWith('valid_id', 'hashed_token')
   })
 })
