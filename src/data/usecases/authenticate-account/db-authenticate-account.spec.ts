@@ -38,7 +38,7 @@ const makeSut = (): SutTypes => {
 }
 
 describe('DbAuthenticateAccount Usecase', () => {
-  test('should call LoadAccountRepository with correct email', async () => {
+  test('should call GetAccountRepository with correct email', async () => {
     const { sut, getAccountRepositoryStub } = makeSut()
     const getAccountByEmailSpy = jest.spyOn(getAccountRepositoryStub, 'getByEmail')
 
@@ -47,7 +47,7 @@ describe('DbAuthenticateAccount Usecase', () => {
     expect(getAccountByEmailSpy).toHaveBeenCalledWith(credentials.email)
   })
 
-  test('should throw LoadAccountRepository throws', async () => {
+  test('should throw GetAccountRepository throws', async () => {
     const { sut, getAccountRepositoryStub } = makeSut()
     jest.spyOn(getAccountRepositoryStub, 'getByEmail').mockReturnValueOnce(Promise.reject(new Error()))
 
@@ -55,7 +55,13 @@ describe('DbAuthenticateAccount Usecase', () => {
     await expect(promise).rejects.toThrow()
   })
 
-  test.todo('should return null if LoadAccountRepository returns null')
+  test('should return null if GetAccountRepository returns null', async () => {
+    const { sut, getAccountRepositoryStub } = makeSut()
+    jest.spyOn(getAccountRepositoryStub, 'getByEmail').mockReturnValueOnce(Promise.resolve(null))
+    const account = await sut.authenticate(makeFakeCredentials())
+    expect(account).toBeNull()
+  })
+
   test.todo('should call Comparer with correct values')
   test.todo('should throw if Comparer throws')
   test.todo('should return null if Comparer returns false')
