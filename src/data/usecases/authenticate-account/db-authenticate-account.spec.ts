@@ -71,6 +71,7 @@ describe('DbAuthenticateAccount Usecase', () => {
   test('should return null if GetAccountRepository returns null', async () => {
     const { sut, getAccountRepositoryStub } = makeSut()
     jest.spyOn(getAccountRepositoryStub, 'getByEmail').mockReturnValueOnce(Promise.resolve(null))
+
     const account = await sut.authenticate(makeFakeCredentials())
     expect(account).toBeNull()
   })
@@ -92,7 +93,13 @@ describe('DbAuthenticateAccount Usecase', () => {
     await expect(promise).rejects.toThrow()
   })
 
-  test.todo('should return null if Comparer returns false')
+  test('should return null if Comparer returns false', async () => {
+    const { sut, comparerStub } = makeSut()
+    jest.spyOn(comparerStub, 'compare').mockReturnValueOnce(Promise.resolve(false))
+
+    const account = await sut.authenticate(makeFakeCredentials())
+    expect(account).toBeNull()
+  })
   test.todo('should call Encrypter with correct id')
   test.todo('should throw if Encrypter throw')
   test.todo('should return correct data on success')
