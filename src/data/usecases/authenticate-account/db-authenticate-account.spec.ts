@@ -47,7 +47,14 @@ describe('DbAuthenticateAccount Usecase', () => {
     expect(getAccountByEmailSpy).toHaveBeenCalledWith(credentials.email)
   })
 
-  test.todo('should throw LoadAccountRepository throws')
+  test('should throw LoadAccountRepository throws', async () => {
+    const { sut, getAccountRepositoryStub } = makeSut()
+    jest.spyOn(getAccountRepositoryStub, 'getByEmail').mockReturnValueOnce(Promise.reject(new Error()))
+
+    const promise = sut.authenticate(makeFakeCredentials())
+    await expect(promise).rejects.toThrow()
+  })
+
   test.todo('should return null if LoadAccountRepository returns null')
   test.todo('should call Comparer with correct values')
   test.todo('should throw if Comparer throws')
