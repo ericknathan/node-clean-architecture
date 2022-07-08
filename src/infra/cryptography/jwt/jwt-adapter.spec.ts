@@ -30,4 +30,10 @@ describe('Jwt Adapter', () => {
       expiresIn: expiresIn
     })
   })
+
+  test('should return a token on sign succes', async () => {
+    const sut = makeSut()
+    const sign = await sut.encrypt(userId)
+    expect(sign).toBe(hashedToken)
+  })
 })
