@@ -1,0 +1,11 @@
+describe('DbAuthenticateAccount Usecase', () => {
+  test.todo('should call LoadAccountRepository with correct email')
+  test.todo('should throw LoadAccountRepository throws')
+  test.todo('should return null if LoadAccountRepository returns null')
+  test.todo('should call Comparer with correct values')
+  test.todo('should throw if Comparer throws')
+  test.todo('should return null if Comparer returns false')
+  test.todo('should call Encrypter with correct id')
+  test.todo('should throw if Encrypter throw')
+  test.todo('should return correct data on success')
+})
