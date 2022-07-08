@@ -8,7 +8,12 @@ export class DbAuthenticateAccount implements AuthenticateAccount {
   }
 
   async authenticate (credentials: CredentialsModel): Promise<AuthenticateAccountModel> {
-    await this.getAccountRepository.getByEmail(credentials.email)
+    const account = await this.getAccountRepository.getByEmail(credentials.email)
+
+    if (account) {
+      console.log(account)
+    }
+
     return null
   }
 }
