@@ -47,4 +47,12 @@ describe('Account Mongo Repository', () => {
     expect(account).toBeTruthy()
     expect(account.email).toBe(fakeAccountData.email)
   })
+
+  test('should not return an account by email if not exists', async () => {
+    const sut = makeSut()
+    const fakeAccountData = makeFakeAccountData()
+    const account = await sut.getByEmail(fakeAccountData.email)
+
+    expect(account).toBeNull()
+  })
 })
