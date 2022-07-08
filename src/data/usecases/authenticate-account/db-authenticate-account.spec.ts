@@ -123,6 +123,13 @@ describe('DbAuthenticateAccount Usecase', () => {
     expect(encrypterSpy).toHaveBeenCalledWith('valid_id')
   })
 
-  test.todo('should throw if Encrypter throw')
+  test('should throw if Encrypter throws', async () => {
+    const { sut, encrypterStub } = makeSut()
+    jest.spyOn(encrypterStub, 'encrypt').mockReturnValueOnce(Promise.reject(new Error()))
+
+    const promise = sut.authenticate(makeFakeCredentials())
+    await expect(promise).rejects.toThrow()
+  })
+
   test.todo('should return correct data on success')
 })
