@@ -18,6 +18,8 @@ export class AccountMongoRepository implements AddAccountRepository, GetAccountR
     const accountCollection = await MongoHelper.getCollection('accounts')
     const accountByEmail = await accountCollection.findOne({ email })
 
+    if (!accountByEmail) return null
+
     return MongoHelper.map(accountByEmail) as AccountModel
   }
 }
