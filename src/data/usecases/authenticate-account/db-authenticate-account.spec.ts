@@ -1,5 +1,5 @@
 import { DbAuthenticateAccount } from './db-authenticate-account'
-import { Comparer, GetAccountRepository, GetAccountRepositoryPayload, CredentialsModel } from './db-authenticate-account-protocols'
+import { Comparer, Encrypter, GetAccountRepository, GetAccountRepositoryPayload, CredentialsModel } from './db-authenticate-account-protocols'
 
 const makeGetAccountRepository = (): GetAccountRepository => {
   class GetAccountRepositoryStub implements GetAccountRepository {
@@ -21,6 +21,16 @@ const makeComparer = (): Comparer => {
   return new ComparerStub()
 }
 
+const makeEncrypter = (): Encrypter => {
+  class EncrypterStub implements Encrypter {
+    async encrypt (value: string): Promise<string> {
+      return Promise.resolve('hashed_password')
+    }
+  }
+
+  return new EncrypterStub()
+}
+
 const makeFakeAccountData = (): GetAccountRepositoryPayload => ({
   id: 'valid_id',
   name: 'valid_name',
@@ -36,17 +46,20 @@ interface SutTypes {
   sut: DbAuthenticateAccount
   getAccountRepositoryStub: GetAccountRepository
   comparerStub: Comparer
+  encrypterStub: Encrypter
 }
 
 const makeSut = (): SutTypes => {
   const getAccountRepositoryStub = makeGetAccountRepository()
   const comparerStub = makeComparer()
-  const sut = new DbAuthenticateAccount(getAccountRepositoryStub, comparerStub)
+  const encrypterStub = makeEncrypter()
+  const sut = new DbAuthenticateAccount(getAccountRepositoryStub, comparerStub, encrypterStub)
 
   return {
     sut,
     getAccountRepositoryStub,
-    comparerStub
+    comparerStub,
+    encrypterStub
   }
 }
 
@@ -100,7 +113,16 @@ describe('DbAuthenticateAccount Usecase', () => {
     const account = await sut.authenticate(makeFakeCredentials())
     expect(account).toBeNull()
   })
-  test.todo('should call Encrypter with correct id')
+
+  test('should call Encrypter with correct id', async () => {
+    const { sut, encrypterStub } = makeSut()
+    const encrypterSpy = jest.spyOn(encrypterStub, 'encrypt')
+
+    const credentials = makeFakeCredentials()
+    await sut.authenticate(credentials)
+    expect(encrypterSpy).toHaveBeenCalledWith('valid_id')
+  })
+
   test.todo('should throw if Encrypter throw')
   test.todo('should return correct data on success')
 })
