@@ -13,7 +13,11 @@ export class DbAuthenticateAccount implements AuthenticateAccount {
     const account = await this.getAccountRepository.getByEmail(credentials.email)
 
     if (account) {
-      await this.comparer.compare(credentials.password, account.password)
+      const isValid = await this.comparer.compare(credentials.password, account.password)
+
+      if (isValid) {
+        console.log(isValid)
+      }
     }
 
     return null
