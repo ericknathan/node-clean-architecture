@@ -27,4 +27,26 @@ describe('SignUp Routes', () => {
       })
       .expect(200)
   })
+
+  test('should return 403 status if provided email is already in use', async () => {
+    await request(app)
+      .post('/api/signup')
+      .send({
+        name: 'Erick',
+        email: 'erick.capito@hotmail.com',
+        password: '123',
+        passwordConfirmation: '123'
+      })
+      .expect(200)
+
+    await request(app)
+      .post('/api/signup')
+      .send({
+        name: 'Erick',
+        email: 'erick.capito@hotmail.com',
+        password: '123',
+        passwordConfirmation: '123'
+      })
+      .expect(403)
+  })
 })
