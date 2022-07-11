@@ -3,13 +3,10 @@ import { InvalidParamError, MissingParamError } from '../../errors'
 import { badRequest, serverError, unauthorizedError, ok } from '../../helpers/http-helper'
 
 export class SignInController implements Controller {
-  private readonly emailValidator: EmailValidator
-  private readonly authenticateAccount: AuthenticateAccount
-
-  constructor (emailValidator: EmailValidator, authenticateAccount: AuthenticateAccount) {
-    this.emailValidator = emailValidator
-    this.authenticateAccount = authenticateAccount
-  }
+  constructor (
+    private readonly emailValidator: EmailValidator,
+    private readonly authenticateAccount: AuthenticateAccount
+  ) {}
 
   async handle (httpRequest: HttpRequest): Promise<HttpResponse> {
     try {

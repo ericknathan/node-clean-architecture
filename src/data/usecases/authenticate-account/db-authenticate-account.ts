@@ -2,17 +2,12 @@ import { AccessTokenRepository } from '../../protocols/access-token-repository'
 import { Comparer, Encrypter, AuthenticateAccount, AuthenticateAccountModel, GetAccountRepository, CredentialsModel } from './db-authenticate-account-protocols'
 
 export class DbAuthenticateAccount implements AuthenticateAccount {
-  private readonly getAccountRepository: GetAccountRepository
-  private readonly comparer: Comparer
-  private readonly encrypter: Encrypter
-  private readonly accessTokenRepository: AccessTokenRepository
-
-  constructor (getAccountRepository: GetAccountRepository, comparer: Comparer, encrypter: Encrypter, accessTokenRepository: AccessTokenRepository) {
-    this.getAccountRepository = getAccountRepository
-    this.comparer = comparer
-    this.encrypter = encrypter
-    this.accessTokenRepository = accessTokenRepository
-  }
+  constructor (
+    private readonly getAccountRepository: GetAccountRepository,
+    private readonly comparer: Comparer,
+    private readonly encrypter: Encrypter,
+    private readonly accessTokenRepository: AccessTokenRepository
+  ) {}
 
   async authenticate (credentials: CredentialsModel): Promise<AuthenticateAccountModel> {
     const account = await this.getAccountRepository.getByEmail(credentials.email)
