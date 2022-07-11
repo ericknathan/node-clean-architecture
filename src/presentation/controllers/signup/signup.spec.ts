@@ -1,7 +1,7 @@
 import { SignUpController } from './signup'
-import { MissingParamError, InvalidParamError, ServerError } from '../../errors'
-import { EmailValidator, AccountModel, AddAccount, AddAccountModel, HttpRequest } from './signup-protocols'
-import { ok, serverError, badRequest } from '../../helpers/http-helper'
+import { MissingParamError, InvalidParamError, ServerError, EmailInUseError } from '../../errors'
+import { EmailValidator, AccountModel, AddAccount, AddAccountModel, HttpRequest, GetAccount } from './signup-protocols'
+import { ok, serverError, badRequest, forbidden } from '../../helpers/http-helper'
 
 const makeEmailValidator = (): EmailValidator => {
   class EmailValidatorStub implements EmailValidator {
@@ -21,6 +21,16 @@ const makeAddAccount = (): AddAccount => {
   }
 
   return new AddAccountStub()
+}
+
+const makeGetAccount = (): GetAccount => {
+  class GetAccountStub implements GetAccount {
+    async getByEmail (email: string): Promise<AccountModel> {
+      return Promise.resolve(makeFakeAccount())
+    }
+  }
+
+  return new GetAccountStub()
 }
 
 const makeFakeAccount = (): AccountModel => ({
@@ -43,17 +53,20 @@ interface SutTypes {
   sut: SignUpController
   emailValidatorStub: EmailValidator
   addAccountStub: AddAccount
+  getAccountStub: GetAccount
 }
 
 const makeSut = (): SutTypes => {
   const emailValidatorStub = makeEmailValidator()
   const addAccountStub = makeAddAccount()
-  const sut = new SignUpController(emailValidatorStub, addAccountStub)
+  const getAccountStub = makeGetAccount()
+  const sut = new SignUpController(emailValidatorStub, addAccountStub, getAccountStub)
 
   return {
     sut,
     emailValidatorStub,
-    addAccountStub
+    addAccountStub,
+    getAccountStub
   }
 }
 
@@ -151,10 +164,24 @@ describe('SignUp Controller', () => {
     expect(httpResponse).toEqual(serverError(new ServerError(null)))
   })
 
+  test('should return 403 status if provided email is already in use', async () => {
+    const { sut, getAccountStub } = makeSut()
+    jest.spyOn(getAccountStub, 'getByEmail').mockImplementationOnce(async () => {
+      return Promise.resolve(null)
+    })
+
+    await sut.handle(makeFakeRequest())
+    const httpResponse = await sut.handle(makeFakeRequest())
+    expect(httpResponse).toEqual(forbidden(new EmailInUseError()))
+  })
+
   test('should return 500 status if AddAccount throws', async () => {
-    const { sut, addAccountStub } = makeSut()
+    const { sut, addAccountStub, getAccountStub } = makeSut()
     jest.spyOn(addAccountStub, 'add').mockImplementationOnce(async () => {
       return Promise.reject(new Error())
+    })
+    jest.spyOn(getAccountStub, 'getByEmail').mockImplementationOnce(async () => {
+      return Promise.resolve(null)
     })
 
     const httpResponse = await sut.handle(makeFakeRequest())
@@ -162,8 +189,11 @@ describe('SignUp Controller', () => {
   })
 
   test('should call AddAccount with correct values', async () => {
-    const { sut, addAccountStub } = makeSut()
+    const { sut, addAccountStub, getAccountStub } = makeSut()
     const addAccountSpy = jest.spyOn(addAccountStub, 'add')
+    jest.spyOn(getAccountStub, 'getByEmail').mockImplementationOnce(async () => {
+      return Promise.resolve(null)
+    })
 
     const httpRequest = makeFakeRequest()
     await sut.handle(httpRequest)
@@ -175,7 +205,10 @@ describe('SignUp Controller', () => {
   })
 
   test('should return 200 status if valid data is provided', async () => {
-    const { sut } = makeSut()
+    const { sut, getAccountStub } = makeSut()
+    jest.spyOn(getAccountStub, 'getByEmail').mockImplementationOnce(async () => {
+      return Promise.resolve(null)
+    })
 
     const httpResponse = await sut.handle(makeFakeRequest())
     expect(httpResponse).toEqual(ok(makeFakeAccount()))
