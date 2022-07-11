@@ -11,20 +11,16 @@ export class DbAuthenticateAccount implements AuthenticateAccount {
 
   async authenticate (credentials: CredentialsModel): Promise<AuthenticateAccountModel> {
     const account = await this.getAccountRepository.getByEmail(credentials.email)
+    if (!account) return null
 
-    if (account) {
-      const isValid = await this.comparer.compare(credentials.password, account.password)
+    const passwordIsValid = await this.comparer.compare(credentials.password, account.password)
+    if (!passwordIsValid) return null
 
-      if (isValid) {
-        const accessToken = await this.encrypter.encrypt(account.id)
-        await this.accessTokenRepository.update(account.id, accessToken)
+    const accessToken = await this.encrypter.encrypt(account.id)
+    await this.accessTokenRepository.update(account.id, accessToken)
 
-        return {
-          accessToken
-        }
-      }
+    return {
+      accessToken
     }
-
-    return null
   }
 }
