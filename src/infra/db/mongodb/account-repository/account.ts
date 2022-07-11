@@ -22,4 +22,13 @@ export class AccountMongoRepository implements AddAccountRepository, GetAccountR
 
     return MongoHelper.map(accountByEmail) as AccountModel
   }
+
+  async getByCredentials (email: string, password: string): Promise<AccountModel> {
+    const accountCollection = await MongoHelper.getCollection('accounts')
+    const accountByCredentials = await accountCollection.findOne({ email, password })
+
+    if (!accountByCredentials) return null
+
+    return MongoHelper.map(accountByCredentials) as AccountModel
+  }
 }

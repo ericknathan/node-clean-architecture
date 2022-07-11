@@ -9,4 +9,9 @@ export class DbGetAccount implements GetAccount {
     const account = await this.getAccountRepository.getByEmail(email)
     return account
   }
+
+  async getByCredentials (email: string, password: string): Promise<GetAccountRepositoryPayload> {
+    const account = await this.getAccountRepository.getByCredentials(email, password)
+    return account
+  }
 }

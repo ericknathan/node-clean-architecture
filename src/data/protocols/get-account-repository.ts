@@ -6,4 +6,5 @@ export interface GetAccountRepositoryPayload {
 
 export interface GetAccountRepository {
   getByEmail: (email: string) => Promise<GetAccountRepositoryPayload>
+  getByCredentials: (email: string, password: string) => Promise<GetAccountRepositoryPayload>
 }
