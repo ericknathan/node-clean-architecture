@@ -95,12 +95,12 @@ describe('DbAuthenticateAccount Usecase', () => {
     await expect(promise).rejects.toThrow()
   })
 
-  test('should return null if GetAccountRepository returns null', async () => {
+  test('should return UnauthorizedError if GetAccountRepository returns null', async () => {
     const { sut, getAccountRepositoryStub } = makeSut()
     jest.spyOn(getAccountRepositoryStub, 'getByEmail').mockReturnValueOnce(Promise.resolve(null))
 
-    const authenticationPayload = await sut.authenticate(makeFakeCredentials())
-    expect(authenticationPayload).toBeNull()
+    const promise = sut.authenticate(makeFakeCredentials())
+    await expect(promise).rejects.toThrow()
   })
 
   test('should call Comparer with correct values', async () => {
@@ -120,12 +120,12 @@ describe('DbAuthenticateAccount Usecase', () => {
     await expect(promise).rejects.toThrow()
   })
 
-  test('should return null if Comparer returns false', async () => {
+  test('should return UnauthorizedError if Comparer returns false', async () => {
     const { sut, comparerStub } = makeSut()
     jest.spyOn(comparerStub, 'compare').mockReturnValueOnce(Promise.resolve(false))
 
-    const authenticationPayload = await sut.authenticate(makeFakeCredentials())
-    expect(authenticationPayload).toBeNull()
+    const promise = sut.authenticate(makeFakeCredentials())
+    await expect(promise).rejects.toThrow()
   })
 
   test('should call Encrypter with correct id', async () => {

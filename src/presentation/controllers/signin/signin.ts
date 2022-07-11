@@ -1,5 +1,5 @@
 import { HttpResponse, HttpRequest, Controller, EmailValidator, AuthenticateAccount } from './signin-protocols'
-import { InvalidParamError, MissingParamError } from '../../errors'
+import { InvalidParamError, MissingParamError, UnauthorizedError } from '../../errors'
 import { badRequest, serverError, unauthorizedError, ok } from '../../helpers/http-helper'
 
 export class SignInController implements Controller {
@@ -30,16 +30,16 @@ export class SignInController implements Controller {
         password
       })
 
-      if (!authenticationResponse) {
-        return unauthorizedError()
-      }
-
       const { accessToken } = authenticationResponse
 
       return ok({
         accessToken
       })
     } catch (error) {
+      if (error instanceof UnauthorizedError) {
+        return unauthorizedError()
+      }
+
       return serverError(error)
     }
   }

@@ -1,3 +1,4 @@
+import { UnauthorizedError } from '../../../presentation/errors'
 import { AccessTokenRepository } from '../../protocols/access-token-repository'
 import { Comparer, Encrypter, AuthenticateAccount, AuthenticateAccountModel, GetAccountRepository, CredentialsModel } from './db-authenticate-account-protocols'
 
@@ -11,10 +12,10 @@ export class DbAuthenticateAccount implements AuthenticateAccount {
 
   async authenticate (credentials: CredentialsModel): Promise<AuthenticateAccountModel> {
     const account = await this.getAccountRepository.getByEmail(credentials.email)
-    if (!account) return null
+    if (!account) throw new UnauthorizedError()
 
     const passwordIsValid = await this.comparer.compare(credentials.password, account.password)
-    if (!passwordIsValid) return null
+    if (!passwordIsValid) throw new UnauthorizedError()
 
     const accessToken = await this.encrypter.encrypt(account.id)
     await this.accessTokenRepository.update(account.id, accessToken)
