@@ -56,4 +56,25 @@ describe('UpdateAccount Routes', () => {
       })
       .expect(204)
   })
+
+  test('should return 401 status code if password is incorrect', async () => {
+    const response = await request(app)
+      .post('/api/signup')
+      .send({
+        name: 'Erick',
+        email: 'erick.capito@hotmail.com',
+        password: '123',
+        passwordConfirmation: '123'
+      })
+
+    const { id } = response.body
+
+    await request(app)
+      .put(`/api/account/update/${id}/password`)
+      .send({
+        currentPassword: '1234',
+        newPassword: '12345'
+      })
+      .expect(401)
+  })
 })
