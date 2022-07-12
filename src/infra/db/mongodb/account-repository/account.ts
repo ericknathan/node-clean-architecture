@@ -19,13 +19,22 @@ export class AccountMongoRepository implements AddAccountRepository, GetAccountR
   async updateData (userId: string, newData: UpdateAccountDataRepositoryPayload): Promise<boolean> {
     const accountCollection = await MongoHelper.getCollection('accounts')
 
+    let accountId: ObjectId
+
+    try {
+      accountId = new ObjectId(userId)
+    } catch {
+      return false
+    }
+
+    const account = await accountCollection.findOne({ _id: accountId })
+    if (!account) return false
+
     const { acknowledged } = await accountCollection.updateOne(
       {
-        _id: new ObjectId(userId)
+        _id: accountId
       }, {
-        $set: {
-          ...newData
-        }
+        $set: newData
       }
     )
 
