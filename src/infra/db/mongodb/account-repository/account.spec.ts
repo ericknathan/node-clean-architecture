@@ -1,3 +1,4 @@
+import { Collection } from 'mongodb'
 import { AddAccountModel } from '../../../../domain/usecases/add-account'
 import { MongoHelper } from '../helpers/mongo-helper'
 import { AccountMongoRepository } from './account'
@@ -9,6 +10,8 @@ const makeFakeAccountData = (): AddAccountModel => ({
 })
 
 describe('Account Mongo Repository', () => {
+  let accountCollection: Collection
+
   beforeAll(async () => {
     await MongoHelper.connect(process.env.MONGO_URL)
   })
@@ -18,7 +21,7 @@ describe('Account Mongo Repository', () => {
   })
 
   beforeEach(async () => {
-    const accountCollection = await MongoHelper.getCollection('accounts')
+    accountCollection = await MongoHelper.getCollection('accounts')
     await accountCollection.deleteMany({})
   })
 
@@ -52,6 +55,16 @@ describe('Account Mongo Repository', () => {
     const sut = makeSut()
     const fakeAccountData = makeFakeAccountData()
     const account = await sut.getByEmail(fakeAccountData.email)
+
+    expect(account).toBeNull()
+  })
+
+  test('should not return an account if account credentials returns null', async () => {
+    const sut = makeSut()
+    const fakeAccountData = makeFakeAccountData()
+    jest.spyOn(accountCollection, 'findOne').mockImplementationOnce(null)
+
+    const account = await sut.getByCredentials(fakeAccountData.email, fakeAccountData.password)
 
     expect(account).toBeNull()
   })
