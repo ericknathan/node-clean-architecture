@@ -1,18 +1,33 @@
 import { DbUpdateAccount } from './db-update-account'
-import { Comparer, AccountModel, UpdateAccountRepository , GetAccountRepository, UpdateAccountDataRepositoryPayload, GetAccountRepositoryPayload } from './db-update-account-protocols'
+import { Comparer, Encrypter, AccountModel, UpdateAccountRepository, UpdateAccountDataRepositoryPayload, GetAccountRepository, GetAccountRepositoryPayload } from './db-update-account-protocols'
 
-const makeComparer = (): Comparer => {
-  class ComparerStub implements Comparer {
+type CryptographyRepository = Comparer & Encrypter
+
+const makeCriptographer = (): CryptographyRepository => {
+  class CryptographerStub implements CryptographyRepository {
     async compare (value: string, hash: string): Promise<boolean> {
       return Promise.resolve(true)
     }
+
+    async encrypt (value: string): Promise<string> {
+      return Promise.resolve('hashed_password')
+    }
   }
 
-  return new ComparerStub()
+  return new CryptographerStub()
 }
+type AccountRepository = UpdateAccountRepository & GetAccountRepository
 
-const makeGetAccountRepository = (): GetAccountRepository => {
-  class GetAccountRepositoryStub implements GetAccountRepository {
+const makeAccountRepository = (): AccountRepository => {
+  class UpdateAccountRepositoryStub implements AccountRepository {
+    async updateData (userId: string, newData: UpdateAccountDataRepositoryPayload): Promise<boolean> {
+      return Promise.resolve(true)
+    }
+
+    async updatePassword (userId: string, newPassword: string): Promise<boolean> {
+      return Promise.resolve(true)
+    }
+
     async getById (userId: string): Promise<GetAccountRepositoryPayload> {
       return Promise.resolve(makeFakeAccount())
     }
@@ -23,20 +38,6 @@ const makeGetAccountRepository = (): GetAccountRepository => {
 
     async getByCredentials (email: string, password: string): Promise<GetAccountRepositoryPayload> {
       return Promise.resolve(makeFakeAccount())
-    }
-  }
-
-  return new GetAccountRepositoryStub()
-}
-
-const makeUpdateAccountRepository = (): UpdateAccountRepository => {
-  class UpdateAccountRepositoryStub implements UpdateAccountRepository {
-    async updateData (userId: string, newData: UpdateAccountDataRepositoryPayload): Promise<boolean> {
-      return Promise.resolve(true)
-    }
-
-    async updatePassword (userId: string, newPassword: string): Promise<boolean> {
-      return Promise.resolve(true)
     }
   }
 
@@ -52,22 +53,19 @@ const makeFakeAccount = (): AccountModel => ({
 
 interface SutTypes {
   sut: DbUpdateAccount
-  comparerStub: Comparer
-  getAccountRepositoryStub: GetAccountRepository
-  updateAccountRepositoryStub: UpdateAccountRepository
+  cryptographerStub: CryptographyRepository
+  accountRepositoryStub: AccountRepository
 }
 
 const makeSut = (): SutTypes => {
-  const comparerStub = makeComparer()
-  const updateAccountRepositoryStub = makeUpdateAccountRepository()
-  const getAccountRepositoryStub = makeGetAccountRepository()
-  const sut = new DbUpdateAccount(comparerStub, getAccountRepositoryStub, updateAccountRepositoryStub)
+  const cryptographerStub = makeCriptographer()
+  const accountRepositoryStub = makeAccountRepository()
+  const sut = new DbUpdateAccount(cryptographerStub, accountRepositoryStub)
 
   return {
     sut,
-    comparerStub,
-    getAccountRepositoryStub,
-    updateAccountRepositoryStub
+    cryptographerStub,
+    accountRepositoryStub
   }
 }
 
@@ -78,8 +76,8 @@ describe('DbUpdateAccount Usecase', () => {
   const newPassword = 'new_password'
 
   test('should call UpdateAccountRepository updateData function with correct values', async () => {
-    const { sut, updateAccountRepositoryStub } = makeSut()
-    const updateAccountDataSpy = jest.spyOn(updateAccountRepositoryStub, 'updateData')
+    const { sut, accountRepositoryStub } = makeSut()
+    const updateAccountDataSpy = jest.spyOn(accountRepositoryStub, 'updateData')
 
     const accountHasBeenUpdated = await sut.updateData(fakeId, { name })
 
@@ -88,21 +86,21 @@ describe('DbUpdateAccount Usecase', () => {
   })
 
   test('should call UpdateAccountRepository updatePassword function with correct values', async () => {
-    const { sut, updateAccountRepositoryStub } = makeSut()
-    const updateAccountPasswordSpy = jest.spyOn(updateAccountRepositoryStub, 'updatePassword')
+    const { sut, accountRepositoryStub, cryptographerStub } = makeSut()
+    const updateAccountPasswordSpy = jest.spyOn(accountRepositoryStub, 'updatePassword')
 
     const accountHasBeenUpdated = await sut.updatePassword(fakeId, { currentPassword, newPassword })
 
     expect(accountHasBeenUpdated).toBeTruthy()
-    expect(updateAccountPasswordSpy).toHaveBeenCalledWith(fakeId, newPassword)
+    expect(updateAccountPasswordSpy).toHaveBeenCalledWith(fakeId, await cryptographerStub.encrypt(newPassword))
   })
 
   test('should call UpdateAccountRepository updatePassword function with incorrect passwords', async () => {
-    const { sut, comparerStub } = makeSut()
-    jest.spyOn(comparerStub, 'compare').mockImplementationOnce(async () => Promise.resolve(false))
+    const { sut, cryptographerStub } = makeSut()
+    jest.spyOn(cryptographerStub, 'compare').mockImplementationOnce(async () => Promise.resolve(false))
 
-    const accountHasBeenUpdated = await sut.updatePassword(fakeId, { currentPassword, newPassword })
+    const accountHasBeenUpdated = sut.updatePassword(fakeId, { currentPassword, newPassword })
 
-    expect(accountHasBeenUpdated).toBeFalsy()
+    await expect(accountHasBeenUpdated).rejects.toThrow()
   })
 })
