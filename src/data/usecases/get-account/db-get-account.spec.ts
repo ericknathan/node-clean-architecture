@@ -3,6 +3,10 @@ import { CredentialsModel, GetAccountRepository, GetAccountRepositoryPayload } f
 
 const makeGetAccountRepository = (): GetAccountRepository => {
   class GetAccountRepositoryStub implements GetAccountRepository {
+    async getById (userId: string): Promise<GetAccountRepositoryPayload> {
+      return Promise.resolve(makeFakeAccountData())
+    }
+
     async getByEmail (email: string): Promise<GetAccountRepositoryPayload> {
       return Promise.resolve(makeFakeAccountData())
     }
@@ -58,5 +62,14 @@ describe('DbGetAccount Usecase', () => {
     const { email } = makeFakeCredentials()
     await sut.getByEmail(email)
     expect(getAccountByEmailSpy).toHaveBeenCalledWith(email)
+  })
+
+  test('should call GetAccountRepository getById function with correct email', async () => {
+    const { sut, getAccountRepositoryStub } = makeSut()
+    const getAccountByIdSpy = jest.spyOn(getAccountRepositoryStub, 'getById')
+
+    const expectedAccount = makeFakeAccountData()
+    await sut.getById(expectedAccount.id)
+    expect(getAccountByIdSpy).toHaveBeenCalledWith(expectedAccount.id)
   })
 })

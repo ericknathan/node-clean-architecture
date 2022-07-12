@@ -4,6 +4,10 @@ import { Encrypter, GetAccountRepository, GetAccountRepositoryPayload, Credentia
 
 const makeGetAccountRepository = (): GetAccountRepository => {
   class GetAccountRepositoryStub implements GetAccountRepository {
+    async getById (userId: string): Promise<GetAccountRepositoryPayload> {
+      return Promise.resolve(makeFakeAccountData())
+    }
+
     async getByEmail (email: string): Promise<GetAccountRepositoryPayload> {
       return Promise.resolve(makeFakeAccountData())
     }

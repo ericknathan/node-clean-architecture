@@ -5,6 +5,11 @@ export class DbGetAccount implements GetAccount {
     private readonly getAccountRepository: GetAccountRepository
   ) {}
 
+  async getById (userId: string): Promise<GetAccountRepositoryPayload> {
+    const account = await this.getAccountRepository.getById(userId)
+    return account
+  }
+
   async getByEmail (email: string): Promise<GetAccountRepositoryPayload> {
     const account = await this.getAccountRepository.getByEmail(email)
     return account
