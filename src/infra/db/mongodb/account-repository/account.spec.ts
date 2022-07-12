@@ -3,6 +3,7 @@ import { AddAccountModel } from '../../../../domain/usecases/add-account'
 import { MongoHelper } from '../helpers/mongo-helper'
 import { AccountMongoRepository } from './account'
 
+const accountId = '62cc5a48fc19c53ee9c22079'
 const makeFakeAccountData = (): AddAccountModel => ({
   name: 'any_name',
   email: 'any_email@mail.com',
@@ -49,6 +50,50 @@ describe('Account Mongo Repository', () => {
 
     expect(account).toBeTruthy()
     expect(account.email).toBe(fakeAccountData.email)
+  })
+
+  test('should not return an account by id if cannot be found account', async () => {
+    const sut = makeSut()
+    const fakeAccountData = makeFakeAccountData()
+    await sut.add(fakeAccountData)
+    const account = await sut.getById(accountId)
+
+    expect(account).toBeNull()
+  })
+
+  test('should return an account by id', async () => {
+    const sut = makeSut()
+    const fakeAccountData = makeFakeAccountData()
+    const createdAccount = await sut.add(fakeAccountData)
+    const account = await sut.getById(createdAccount.id)
+
+    expect(account).toBeTruthy()
+    expect(account.id).toBe(createdAccount.id)
+  })
+
+  test('should update data from account', async () => {
+    const sut = makeSut()
+    const fakeAccountData = makeFakeAccountData()
+    const createdAccount = await sut.add(fakeAccountData)
+
+    const email = 'test@example.com'
+    const accountHasBeenUpdated = await sut.updateData(createdAccount.id, { email })
+    const updatedAccount = await sut.getById(createdAccount.id)
+
+    expect(accountHasBeenUpdated).toBeTruthy()
+    expect(updatedAccount.email).toBe(email)
+  })
+
+  test('should update password from account', async () => {
+    const sut = makeSut()
+    const fakeAccountData = makeFakeAccountData()
+    const createdAccount = await sut.add(fakeAccountData)
+
+    const accountHasBeenUpdated = await sut.updatePassword(createdAccount.id, 'new_password')
+    const updatedAccount = await sut.getById(createdAccount.id)
+
+    expect(accountHasBeenUpdated).toBeTruthy()
+    expect(createdAccount.password).not.toBe(updatedAccount.password)
   })
 
   test('should not return an account by email if not exists', async () => {

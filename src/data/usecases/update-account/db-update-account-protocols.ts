@@ -1,0 +1,5 @@
+export * from '../../../domain/models/account'
+export * from '../../../domain/usecases/update-account'
+export * from '../../protocols/comparer'
+export * from '../../protocols/update-account-repository'
+export * from '../../protocols/get-account-repository'
