@@ -5,7 +5,7 @@ import { AccountModel } from '../../../../domain/models/account'
 import { MongoHelper } from '../helpers/mongo-helper'
 import { ObjectId } from 'mongodb'
 import { UpdateAccountDataRepositoryPayload, UpdateAccountRepository } from '../../../../data/protocols/update-account-repository'
-import { ClientError, InvalidParamError } from '../../../../presentation/errors'
+import { InvalidParamError, UnauthorizedError } from '../../../../presentation/errors'
 
 export class AccountMongoRepository implements AddAccountRepository, GetAccountRepository, UpdateAccountRepository {
   async add (accountData: AddAccountModel): Promise<AccountModel> {
@@ -61,7 +61,7 @@ export class AccountMongoRepository implements AddAccountRepository, GetAccountR
     const accountCollection = await MongoHelper.getCollection('accounts')
     const accountById = await accountCollection.findOne({ _id: accountId })
 
-    if (!accountById) throw new ClientError('Account does not exists')
+    if (!accountById) throw new UnauthorizedError()
 
     return MongoHelper.map(accountById) as AccountModel
   }
