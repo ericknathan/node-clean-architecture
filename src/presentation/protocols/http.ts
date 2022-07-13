@@ -6,4 +6,7 @@ export interface HttpResponse {
 export interface HttpRequest {
   body?: any
   params?: any
+  user?: {
+    id: string
+  }
 }
