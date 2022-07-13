@@ -55,7 +55,7 @@ describe('UpdateAccount Routes', () => {
       .send({
         name: 'Erick'
       })
-      .expect(204)
+      .expect(200)
   })
 
   test('should update account password', async () => {
@@ -70,7 +70,7 @@ describe('UpdateAccount Routes', () => {
         currentPassword: user.password,
         newPassword: '12345'
       })
-      .expect(204)
+      .expect(200)
   })
 
   test('should return 401 status code if password is incorrect', async () => {

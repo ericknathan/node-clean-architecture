@@ -1,6 +1,6 @@
 import { HttpResponse, HttpRequest, Controller, EmailValidator } from './update-data-protocols'
-import { ClientError, InvalidParamError } from '../../../errors'
-import { badRequest, serverError, update } from '../../../helpers/http-helper'
+import { InvalidParamError } from '../../../errors'
+import { badRequest, serverError, ok } from '../../../helpers/http-helper'
 import { UpdateAccount } from '../../../../domain/usecases/update-account'
 
 export class UpdateDataController implements Controller {
@@ -26,9 +26,9 @@ export class UpdateDataController implements Controller {
         email
       })
 
-      return update()
+      return ok({ message: 'Data updated successfully' })
     } catch (error) {
-      if (error instanceof InvalidParamError || error instanceof ClientError) {
+      if (error instanceof InvalidParamError) {
         return badRequest(error)
       }
 

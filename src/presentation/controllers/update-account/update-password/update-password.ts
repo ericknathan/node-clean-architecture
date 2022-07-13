@@ -1,5 +1,5 @@
 import { HttpResponse, HttpRequest, Controller } from './update-password-protocols'
-import { serverError, unauthorizedError, update } from '../../../helpers/http-helper'
+import { serverError, unauthorizedError, ok } from '../../../helpers/http-helper'
 import { UpdateAccount } from '../../../../domain/usecases/update-account'
 import { UnauthorizedError } from '../../../errors'
 
@@ -18,7 +18,7 @@ export class UpdatePasswordController implements Controller {
         newPassword
       })
 
-      return update()
+      return ok({ message: 'Password updated successfully' })
     } catch (error) {
       if (error instanceof UnauthorizedError) {
         return unauthorizedError()
