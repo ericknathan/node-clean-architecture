@@ -54,22 +54,6 @@ const makeFakeRequest = (): HttpRequest => ({
 })
 
 describe('UpdateData Controller', () => {
-  test('should return 400 status if a blocked field has been provided', async () => {
-    const { sut } = makeSut()
-
-    const httpRequest = {
-      body: {
-        password: 'any_password'
-      },
-      user: {
-        id: 'any_id'
-      }
-    }
-
-    const httpResponse = await sut.handle(httpRequest)
-    expect(httpResponse).toEqual(badRequest(new InvalidParamError('password')))
-  })
-
   test('should return 400 status if an invalid email is provided', async () => {
     const { sut, emailValidatorStub } = makeSut()
     jest.spyOn(emailValidatorStub, 'isValid').mockReturnValueOnce(false)

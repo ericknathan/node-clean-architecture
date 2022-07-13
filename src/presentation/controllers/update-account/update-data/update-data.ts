@@ -12,15 +12,7 @@ export class UpdateDataController implements Controller {
   async handle (httpRequest: HttpRequest): Promise<HttpResponse> {
     try {
       const { id } = httpRequest.user
-      const { email } = httpRequest.body
-
-      const blockedFields = ['id', 'password', 'accessToken']
-
-      for (const field of blockedFields) {
-        if (httpRequest.body[field]) {
-          return badRequest(new InvalidParamError(field))
-        }
-      }
+      const { name, email } = httpRequest.body
 
       if (email) {
         const isValid = this.emailValidator.isValid(email)
@@ -30,7 +22,8 @@ export class UpdateDataController implements Controller {
       }
 
       await this.updateAccount.updateData(id, {
-        ...httpRequest.body
+        name,
+        email
       })
 
       return update()
