@@ -5,6 +5,7 @@ import { AccountModel } from '../../../../domain/models/account'
 import { MongoHelper } from '../helpers/mongo-helper'
 import { ObjectId } from 'mongodb'
 import { UpdateAccountDataRepositoryPayload, UpdateAccountRepository } from '../../../../data/protocols/update-account-repository'
+import { ClientError, InvalidParamError } from '../../../../presentation/errors'
 
 export class AccountMongoRepository implements AddAccountRepository, GetAccountRepository, UpdateAccountRepository {
   async add (accountData: AddAccountModel): Promise<AccountModel> {
@@ -18,21 +19,11 @@ export class AccountMongoRepository implements AddAccountRepository, GetAccountR
 
   async updateData (userId: string, newData: UpdateAccountDataRepositoryPayload): Promise<boolean> {
     const accountCollection = await MongoHelper.getCollection('accounts')
-
-    let accountId: ObjectId
-
-    try {
-      accountId = new ObjectId(userId)
-    } catch {
-      return false
-    }
-
-    const account = await accountCollection.findOne({ _id: accountId })
-    if (!account) return false
+    const account = await this.getById(userId)
 
     const { acknowledged } = await accountCollection.updateOne(
       {
-        _id: accountId
+        _id: new ObjectId(account.id)
       }, {
         $set: newData
       }
@@ -43,10 +34,11 @@ export class AccountMongoRepository implements AddAccountRepository, GetAccountR
 
   async updatePassword (userId: string, newPassword: string): Promise<boolean> {
     const accountCollection = await MongoHelper.getCollection('accounts')
+    const account = await this.getById(userId)
 
     const { acknowledged } = await accountCollection.updateOne(
       {
-        _id: new ObjectId(userId)
+        _id: new ObjectId(account.id)
       }, {
         $set: {
           password: newPassword
@@ -58,10 +50,18 @@ export class AccountMongoRepository implements AddAccountRepository, GetAccountR
   }
 
   async getById (userId: string): Promise<AccountModel> {
-    const accountCollection = await MongoHelper.getCollection('accounts')
-    const accountById = await accountCollection.findOne({ _id: new ObjectId(userId) })
+    let accountId: ObjectId
 
-    if (!accountById) return null
+    try {
+      accountId = new ObjectId(userId)
+    } catch {
+      throw new InvalidParamError('id')
+    }
+
+    const accountCollection = await MongoHelper.getCollection('accounts')
+    const accountById = await accountCollection.findOne({ _id: accountId })
+
+    if (!accountById) throw new ClientError('Account does not exists')
 
     return MongoHelper.map(accountById) as AccountModel
   }

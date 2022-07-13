@@ -56,9 +56,9 @@ describe('Account Mongo Repository', () => {
     const sut = makeSut()
     const fakeAccountData = makeFakeAccountData()
     await sut.add(fakeAccountData)
-    const account = await sut.getById(accountId)
+    const getAccountByIdPromise = sut.getById(accountId)
 
-    expect(account).toBeNull()
+    await expect(getAccountByIdPromise).rejects.toThrow()
   })
 
   test('should return an account by id', async () => {
@@ -112,5 +112,22 @@ describe('Account Mongo Repository', () => {
     const account = await sut.getByCredentials(fakeAccountData.email, fakeAccountData.password)
 
     expect(account).toBeNull()
+  })
+
+  test('should not update data from account if provided id is invalid', async () => {
+    const sut = makeSut()
+
+    const accountHasBeenUpdatedPromise = sut.updateData('invalid_id', { email: 'test@example.com' })
+
+    await expect(accountHasBeenUpdatedPromise).rejects.toThrow()
+  })
+
+  test('should not update data from account if provided id is not registered in database', async () => {
+    const sut = makeSut()
+    jest.spyOn(accountCollection, 'findOne').mockImplementationOnce(null)
+
+    const accountHasBeenUpdatedPromise = sut.updateData('62cd8b4e5f4eff0d61202bbf', { email: 'test@example.com' })
+
+    await expect(accountHasBeenUpdatedPromise).rejects.toThrow()
   })
 })
