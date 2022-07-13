@@ -10,17 +10,13 @@ export class UpdatePasswordController implements Controller {
 
   async handle (httpRequest: HttpRequest): Promise<HttpResponse> {
     try {
-      const { id } = httpRequest.params
+      const { id } = httpRequest.user
       const { currentPassword, newPassword } = httpRequest.body
 
-      const accountHasBeenUpdated = await this.updateAccount.updatePassword(id, {
+      await this.updateAccount.updatePassword(id, {
         currentPassword,
         newPassword
       })
-
-      if (!accountHasBeenUpdated) {
-        return serverError(new Error('Account has not been updated'))
-      }
 
       return update()
     } catch (error) {

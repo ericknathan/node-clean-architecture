@@ -1,5 +1,5 @@
 import { HttpResponse, HttpRequest, Controller, EmailValidator } from './update-data-protocols'
-import { InvalidParamError } from '../../../errors'
+import { ClientError, InvalidParamError } from '../../../errors'
 import { badRequest, serverError, update } from '../../../helpers/http-helper'
 import { UpdateAccount } from '../../../../domain/usecases/update-account'
 
@@ -11,7 +11,7 @@ export class UpdateDataController implements Controller {
 
   async handle (httpRequest: HttpRequest): Promise<HttpResponse> {
     try {
-      const { id } = httpRequest.params
+      const { id } = httpRequest.user
       const { email } = httpRequest.body
 
       const blockedFields = ['id', 'password', 'accessToken']
@@ -29,17 +29,16 @@ export class UpdateDataController implements Controller {
         }
       }
 
-      const accountHasBeenUpdated = await this.updateAccount.updateData(id, {
+      await this.updateAccount.updateData(id, {
         ...httpRequest.body
       })
 
-      if (!accountHasBeenUpdated) {
-        return badRequest(new Error('Account has not been updated'))
-      }
-
       return update()
     } catch (error) {
-      console.log(error)
+      if (error instanceof InvalidParamError || error instanceof ClientError) {
+        return badRequest(error)
+      }
+
       return serverError(error)
     }
   }

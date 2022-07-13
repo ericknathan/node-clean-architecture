@@ -1,6 +1,34 @@
-import request from 'supertest'
+import request, { Response } from 'supertest'
+import { AddAccountModel } from '../../../domain/usecases/add-account'
 import { MongoHelper } from '../../../infra/db/mongodb/helpers/mongo-helper'
 import app from '../../config/app'
+
+const makeUser = (): AddAccountModel => ({
+  name: 'Erick',
+  email: 'erick.capito@hotmail.com',
+  password: '123',
+  passwordConfirmation: '123'
+})
+
+const authenticateUser = async (user: AddAccountModel): Promise<string> => {
+  const signInResponse = await request(app)
+    .post('/api/signin')
+    .send({
+      email: user.email,
+      password: user.password
+    })
+
+  const { accessToken } = signInResponse.body
+  return accessToken
+}
+
+const signUpUser = async (user: AddAccountModel): Promise<Response> => {
+  const response = await request(app)
+    .post('/api/signup')
+    .send(user)
+
+  return response
+}
 
 describe('UpdateAccount Routes', () => {
   beforeAll(async () => {
@@ -17,19 +45,13 @@ describe('UpdateAccount Routes', () => {
   })
 
   test('should update account data', async () => {
-    const response = await request(app)
-      .post('/api/signup')
-      .send({
-        name: 'Erick',
-        email: 'erick.capito@hotmail.com',
-        password: '123',
-        passwordConfirmation: '123'
-      })
-
-    const { id } = response.body
+    const user = makeUser()
+    await signUpUser(user)
+    const accessToken = await authenticateUser(user)
 
     await request(app)
-      .put(`/api/account/update/${id}/data`)
+      .put('/api/account/update/data')
+      .set('Authorization', `Bearer ${accessToken}`)
       .send({
         name: 'Erick'
       })
@@ -37,40 +59,28 @@ describe('UpdateAccount Routes', () => {
   })
 
   test('should update account password', async () => {
-    const response = await request(app)
-      .post('/api/signup')
-      .send({
-        name: 'Erick',
-        email: 'erick.capito@hotmail.com',
-        password: '123',
-        passwordConfirmation: '123'
-      })
-
-    const { id } = response.body
+    const user = makeUser()
+    await signUpUser(user)
+    const accessToken = await authenticateUser(user)
 
     await request(app)
-      .put(`/api/account/update/${id}/password`)
+      .put('/api/account/update/password')
+      .set('Authorization', `Bearer ${accessToken}`)
       .send({
-        currentPassword: '123',
+        currentPassword: user.password,
         newPassword: '12345'
       })
       .expect(204)
   })
 
   test('should return 401 status code if password is incorrect', async () => {
-    const response = await request(app)
-      .post('/api/signup')
-      .send({
-        name: 'Erick',
-        email: 'erick.capito@hotmail.com',
-        password: '123',
-        passwordConfirmation: '123'
-      })
-
-    const { id } = response.body
+    const user = makeUser()
+    await signUpUser(user)
+    const accessToken = await authenticateUser(user)
 
     await request(app)
-      .put(`/api/account/update/${id}/password`)
+      .put('/api/account/update/password')
+      .set('Authorization', `Bearer ${accessToken}`)
       .send({
         currentPassword: '1234',
         newPassword: '12345'
