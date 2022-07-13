@@ -1,7 +1,12 @@
-import { sign } from 'jsonwebtoken'
+import { sign, verify } from 'jsonwebtoken'
 import { Encrypter } from '../../../data/protocols/encrypter'
+import { Decrypter } from '../../../data/protocols/decrypter'
 
-export class JwtAdapter implements Encrypter {
+type DecryptPayload = {
+  sub: string
+}
+
+export class JwtAdapter implements Encrypter, Decrypter {
   constructor (
     private readonly secret: string,
     private readonly expiresIn: string = '30d'
@@ -12,5 +17,10 @@ export class JwtAdapter implements Encrypter {
       subject: userId,
       expiresIn: this.expiresIn
     })
+  }
+
+  async decrypt (value: string): Promise<string> {
+    const { sub: userId } = verify(value, this.secret) as DecryptPayload
+    return Promise.resolve(userId)
   }
 }
