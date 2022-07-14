@@ -12,16 +12,16 @@ export class SignInController implements Controller {
     const { email, password } = httpRequest.body
 
     if (!email) {
-      return Promise.resolve(badRequest(new MissingParamError('email')))
+      return badRequest(new MissingParamError('email'))
     }
 
     if (!password) {
-      return Promise.resolve(badRequest(new MissingParamError('password')))
+      return badRequest(new MissingParamError('password'))
     }
 
     const isValid = this.emailValidator.isValid(email)
     if (!isValid) {
-      return Promise.resolve(badRequest(new InvalidParamError('email')))
+      return badRequest(new InvalidParamError('email'))
     }
   }
 }
