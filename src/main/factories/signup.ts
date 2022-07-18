@@ -11,12 +11,12 @@ import { LogKnexRepository } from '../../infra/db/knex/log-repository/log'
 
 export const makeSignUpController = (): Controller => {
   const emailValidatorAdapter = new EmailValidatorAdapter()
-  const cryptoAdapter = new CryptoAdapter()
-  const accountMongoRepository = new AccountMongoRepository()
-  const dbAddAccount = new DbAddAccount(cryptoAdapter, accountMongoRepository)
-  const dbGetAccount = new DbGetAccount(accountMongoRepository)
+  const cryptographyAdapter = new CryptoAdapter()
+  const dbAccountRepository = new AccountMongoRepository()
+  const dbAddAccount = new DbAddAccount(cryptographyAdapter, dbAccountRepository)
+  const dbGetAccount = new DbGetAccount(dbAccountRepository)
   const signUpController = new SignUpController(emailValidatorAdapter, dbAddAccount, dbGetAccount)
-  const logMongoRepository = new LogMongoRepository()
-  const logKnexRepository = new LogKnexRepository()
-  return new LogControllerDecorator(signUpController, logMongoRepository, logKnexRepository)
+  const errorLoggerRepository = new LogMongoRepository()
+  const activityLoggerRepository = new LogKnexRepository()
+  return new LogControllerDecorator(signUpController, errorLoggerRepository, activityLoggerRepository)
 }

@@ -13,13 +13,13 @@ import { LogKnexRepository } from '../../infra/db/knex/log-repository/log'
 
 export const makeSignInController = (): Controller => {
   const emailValidatorAdapter = new EmailValidatorAdapter()
-  const cryptoAdapter = new CryptoAdapter()
+  const cryptographyAdapter = new CryptoAdapter()
   const jwtAdapter = new JwtAdapter(env.jwtSecret)
-  const accountMongoRepository = new AccountMongoRepository()
-  const accessTokenRepository = new AccessTokenMongoRepository()
-  const dbAuthenticateAccount = new DbAuthenticateAccount(accountMongoRepository, cryptoAdapter, jwtAdapter, accessTokenRepository)
+  const dbAccountRepository = new AccountMongoRepository()
+  const dbAccessTokenRepository = new AccessTokenMongoRepository()
+  const dbAuthenticateAccount = new DbAuthenticateAccount(dbAccountRepository, cryptographyAdapter, jwtAdapter, dbAccessTokenRepository)
   const signInController = new SignInController(emailValidatorAdapter, dbAuthenticateAccount)
-  const logMongoRepository = new LogMongoRepository()
-  const logKnexRepository = new LogKnexRepository()
-  return new LogControllerDecorator(signInController, logMongoRepository, logKnexRepository)
+  const errorLoggerRepository = new LogMongoRepository()
+  const activityLoggerRepository = new LogKnexRepository()
+  return new LogControllerDecorator(signInController, errorLoggerRepository, activityLoggerRepository)
 }

@@ -11,21 +11,21 @@ import { LogKnexRepository } from '../../infra/db/knex/log-repository/log'
 
 export const makeUpdateAccountDataController = (): Controller => {
   const emailValidatorAdapter = new EmailValidatorAdapter()
-  const cryptoAdapter = new CryptoAdapter()
+  const cryptographyAdapter = new CryptoAdapter()
   const accountMongoRepository = new AccountMongoRepository()
-  const dbUpdateAccount = new DbUpdateAccount(cryptoAdapter, accountMongoRepository)
+  const dbUpdateAccount = new DbUpdateAccount(cryptographyAdapter, accountMongoRepository)
   const updateAccountDataController = new UpdateDataController(emailValidatorAdapter, dbUpdateAccount)
-  const logMongoRepository = new LogMongoRepository()
-  const logKnexRepository = new LogKnexRepository()
-  return new LogControllerDecorator(updateAccountDataController, logMongoRepository, logKnexRepository)
+  const errorLoggerRepository = new LogMongoRepository()
+  const activityLoggerRepository = new LogKnexRepository()
+  return new LogControllerDecorator(updateAccountDataController, errorLoggerRepository, activityLoggerRepository)
 }
 
 export const makeUpdateAccountPasswordController = (): Controller => {
-  const cryptoAdapter = new CryptoAdapter()
+  const cryptographyAdapter = new CryptoAdapter()
   const accountMongoRepository = new AccountMongoRepository()
-  const dbUpdateAccount = new DbUpdateAccount(cryptoAdapter, accountMongoRepository)
+  const dbUpdateAccount = new DbUpdateAccount(cryptographyAdapter, accountMongoRepository)
   const updateAccountPasswordController = new UpdatePasswordController(dbUpdateAccount)
-  const logMongoRepository = new LogMongoRepository()
-  const logKnexRepository = new LogKnexRepository()
-  return new LogControllerDecorator(updateAccountPasswordController, logMongoRepository, logKnexRepository)
+  const errorLoggerRepository = new LogMongoRepository()
+  const activityLoggerRepository = new LogKnexRepository()
+  return new LogControllerDecorator(updateAccountPasswordController, errorLoggerRepository, activityLoggerRepository)
 }
