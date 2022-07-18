@@ -7,6 +7,7 @@ import { Controller } from '../../presentation/protocols'
 import { LogControllerDecorator } from '../decorators/log'
 import { DbGetAccount } from '../../data/usecases/get-account/db-get-account'
 import { CryptoAdapter } from '../../infra/cryptography/crypto/crypto-adapter'
+import { LogKnexRepository } from '../../infra/db/knex/log-repository/log'
 
 export const makeSignUpController = (): Controller => {
   const emailValidatorAdapter = new EmailValidatorAdapter()
@@ -16,5 +17,6 @@ export const makeSignUpController = (): Controller => {
   const dbGetAccount = new DbGetAccount(accountMongoRepository)
   const signUpController = new SignUpController(emailValidatorAdapter, dbAddAccount, dbGetAccount)
   const logMongoRepository = new LogMongoRepository()
-  return new LogControllerDecorator(signUpController, logMongoRepository)
+  const logKnexRepository = new LogKnexRepository()
+  return new LogControllerDecorator(signUpController, logMongoRepository, logKnexRepository)
 }

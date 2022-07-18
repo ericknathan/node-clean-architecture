@@ -9,6 +9,7 @@ import { AccessTokenMongoRepository } from '../../infra/db/mongodb/access-token-
 import { JwtAdapter } from '../../infra/cryptography/jwt/jwt-adapter'
 import env from '../config/env'
 import { CryptoAdapter } from '../../infra/cryptography/crypto/crypto-adapter'
+import { LogKnexRepository } from '../../infra/db/knex/log-repository/log'
 
 export const makeSignInController = (): Controller => {
   const emailValidatorAdapter = new EmailValidatorAdapter()
@@ -19,5 +20,6 @@ export const makeSignInController = (): Controller => {
   const dbAuthenticateAccount = new DbAuthenticateAccount(accountMongoRepository, cryptoAdapter, jwtAdapter, accessTokenRepository)
   const signInController = new SignInController(emailValidatorAdapter, dbAuthenticateAccount)
   const logMongoRepository = new LogMongoRepository()
-  return new LogControllerDecorator(signInController, logMongoRepository)
+  const logKnexRepository = new LogKnexRepository()
+  return new LogControllerDecorator(signInController, logMongoRepository, logKnexRepository)
 }

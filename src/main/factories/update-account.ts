@@ -7,6 +7,7 @@ import { LogMongoRepository } from '../../infra/db/mongodb/log-repository/log'
 import { Controller } from '../../presentation/protocols'
 import { LogControllerDecorator } from '../decorators/log'
 import { CryptoAdapter } from '../../infra/cryptography/crypto/crypto-adapter'
+import { LogKnexRepository } from '../../infra/db/knex/log-repository/log'
 
 export const makeUpdateAccountDataController = (): Controller => {
   const emailValidatorAdapter = new EmailValidatorAdapter()
@@ -15,7 +16,8 @@ export const makeUpdateAccountDataController = (): Controller => {
   const dbUpdateAccount = new DbUpdateAccount(cryptoAdapter, accountMongoRepository)
   const updateAccountDataController = new UpdateDataController(emailValidatorAdapter, dbUpdateAccount)
   const logMongoRepository = new LogMongoRepository()
-  return new LogControllerDecorator(updateAccountDataController, logMongoRepository)
+  const logKnexRepository = new LogKnexRepository()
+  return new LogControllerDecorator(updateAccountDataController, logMongoRepository, logKnexRepository)
 }
 
 export const makeUpdateAccountPasswordController = (): Controller => {
@@ -24,5 +26,6 @@ export const makeUpdateAccountPasswordController = (): Controller => {
   const dbUpdateAccount = new DbUpdateAccount(cryptoAdapter, accountMongoRepository)
   const updateAccountPasswordController = new UpdatePasswordController(dbUpdateAccount)
   const logMongoRepository = new LogMongoRepository()
-  return new LogControllerDecorator(updateAccountPasswordController, logMongoRepository)
+  const logKnexRepository = new LogKnexRepository()
+  return new LogControllerDecorator(updateAccountPasswordController, logMongoRepository, logKnexRepository)
 }
