@@ -4,7 +4,8 @@ export default {
     '<rootDir>/src/**/*.ts',
     '!<rootDir>/src/main/**',
     '!**/*-protocols.ts',
-    '!**/protocols/**'
+    '!**/protocols/**',
+    '!**/migrations/**'
   ],
   coverageDirectory: 'coverage',
   coverageProvider: 'babel',
