@@ -1,3 +1,4 @@
+import { LogActivityRepository } from '../../data/protocols/log-activity-repository'
 import { LogErrorRepository } from '../../data/protocols/log-error-repository'
 import { AccountModel } from '../../domain/models/account'
 import { serverError, ok } from '../../presentation/helpers/http-helper'
@@ -22,6 +23,16 @@ const makeLogErrorRepository = (): LogErrorRepository => {
   }
 
   return new LogErrorRepositoryStub()
+}
+
+const makeLogActivityRepository = (): LogActivityRepository => {
+  class LogActivityRepositoryStub implements LogActivityRepository {
+    async logActivity (input: any, output: any): Promise<void> {
+      return Promise.resolve()
+    }
+  }
+
+  return new LogActivityRepositoryStub()
 }
 
 const makeFakeAccount = (): AccountModel => ({
@@ -50,16 +61,20 @@ interface SutTypes {
   sut: LogControllerDecorator
   controllerStub: Controller
   logErrorRepositoryStub: LogErrorRepository
+  logActivityRepositoryStub: LogActivityRepository
 }
 
 const makeSut = (): SutTypes => {
   const controllerStub = makeController()
   const logErrorRepositoryStub = makeLogErrorRepository()
-  const sut = new LogControllerDecorator(controllerStub, logErrorRepositoryStub)
+  const logActivityRepositoryStub = makeLogActivityRepository()
+  const sut = new LogControllerDecorator(controllerStub, logErrorRepositoryStub, logActivityRepositoryStub)
+
   return {
     sut,
     controllerStub,
-    logErrorRepositoryStub
+    logErrorRepositoryStub,
+    logActivityRepositoryStub
   }
 }
 describe('LogController Decorator', () => {
@@ -88,5 +103,15 @@ describe('LogController Decorator', () => {
 
     await sut.handle(makeFakeRequest())
     expect(logSpy).toHaveBeenCalledWith(fakeError.body.stack)
+  })
+
+  test('should call LogActivityRepository with http request and response', async () => {
+    const { sut, logActivityRepositoryStub } = makeSut()
+    const httpRequest = makeFakeRequest()
+
+    const logSpy = jest.spyOn(logActivityRepositoryStub, 'logActivity')
+
+    const httpResponse = await sut.handle(makeFakeRequest())
+    expect(logSpy).toHaveBeenCalledWith(httpRequest, httpResponse)
   })
 })
