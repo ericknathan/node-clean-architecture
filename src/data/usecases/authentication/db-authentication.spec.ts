@@ -1,5 +1,5 @@
 import { AccountModel } from '../../../domain/models/account'
-import { LoadAccountByEmailRepository } from '../../protocols/load-account-by-email-repository'
+import { LoadAccountByEmailRepository } from '../../protocols/db/account/load-account-by-email-repository'
 import { DbAuthentication } from './db-authentication'
 
 const makeLoadAccountByEmailRepository = (): LoadAccountByEmailRepository => {
