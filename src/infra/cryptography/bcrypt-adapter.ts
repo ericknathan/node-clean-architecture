@@ -1,15 +1,21 @@
 import bcrypt from 'bcrypt'
-import { Encrypter } from '../../data/protocols/encrypter'
+import { Hasher } from '../../data/protocols/hasher'
+import { HashComparer } from '../../data/protocols/hash-comparer'
 
-export class BCryptAdapter implements Encrypter {
+export class BCryptAdapter implements Hasher, HashComparer {
   private readonly salt: number
 
   constructor (salt: number) {
     this.salt = salt
   }
 
-  async encrypt (value: string): Promise<string> {
+  async hash (value: string): Promise<string> {
     const hash = await bcrypt.hash(value , this.salt)
     return hash
+  }
+
+  async compare (value: string, hash: string): Promise<boolean> {
+    await bcrypt.compare(value, hash)
+    return Promise.resolve(true)
   }
 }
