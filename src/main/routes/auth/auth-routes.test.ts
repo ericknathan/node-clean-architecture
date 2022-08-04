@@ -11,7 +11,7 @@ describe('Authentication Routes', () => {
     await MongoHelper.disconnect()
   })
 
-  beforeEach(async () => {
+  beforeAll(async () => {
     const accountCollection = await MongoHelper.getCollection('accounts')
     await accountCollection.deleteMany({})
   })
@@ -25,6 +25,18 @@ describe('Authentication Routes', () => {
           email: 'erick.capito@hotmail.com',
           password: '123',
           passwordConfirmation: '123'
+        })
+        .expect(200)
+    })
+  })
+
+  describe('[POST] /signin', () => {
+    test('should return 200 status on signin', async () => {
+      await request(app)
+        .post('/api/signin')
+        .send({
+          email: 'erick.capito@hotmail.com',
+          password: '123'
         })
         .expect(200)
     })
