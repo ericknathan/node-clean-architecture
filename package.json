@@ -1,6 +1,6 @@
 {
   "name": "e-survey",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "NodeJs Rest API and GraphQL using TDD, Clean Architecture, Typescript and Design Patterns",
   "main": "index.js",
   "scripts": {
