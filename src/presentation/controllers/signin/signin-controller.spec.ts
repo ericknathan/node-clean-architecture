@@ -1,7 +1,7 @@
-import { SignInController } from './signin'
+import { SignInController } from './signin-controller'
 import { MissingParamError } from '../../errors'
 import { badRequest, serverError, unauthorized, ok } from '../../helpers/http/http-helper'
-import { HttpRequest, Authentication, AuthenticationCredentials, Validation } from './signin-protocols'
+import { HttpRequest, Authentication, AuthenticationCredentials, Validation } from './signin-controller-protocols'
 
 const makeHttpRequest = (): HttpRequest => ({
   body: {
